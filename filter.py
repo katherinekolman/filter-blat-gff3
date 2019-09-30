@@ -39,6 +39,8 @@ for record in SeqIO.parse(fasta_file, 'fasta'):
 
 # filter matches
 to_delete = {}
+num_deleted_match = 0
+num_deleted_match_part = 0
 for a in DB.features_of_type('match'):
     if not a.attributes.get('m_stop', False):
         continue
@@ -51,8 +53,12 @@ for a in DB.features_of_type('match'):
 
     if length < LENGTH_THRESHOLD * lengths[match]:
         to_delete.update({x.attributes['ID'][0]: 1 for x in [a, *list(DB.children(gid))]})
+        num_deleted_match += 1
+        num_deleted_match_part += len(list(DB.children(gid)))
     elif score < SCORE_THRESHOLD:
         to_delete.update({x.attributes['ID'][0]: 1 for x in [a, *list(DB.children(gid))]})
+        num_deleted_match += 1
+        num_deleted_match_part += len(list(DB.children(gid)))
 
 # include gff directive at top
 f = open(output_file, 'w')
@@ -75,5 +81,24 @@ with sqlite3.connect(db_name) as connection:
                 new_str.append("{}={};".format(k, v[0]))
         new_str = "".join(new_str)
         writer.writerow([row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], new_str])
+
+# print filtering statistics
+original_match = DB.count_features_of_type('match')
+original_match_part = DB.count_features_of_type('match_part')
+filter_match = original_match - num_deleted_match
+filter_match_part = original_match_part - num_deleted_match_part
+
+table = [
+    ["", "Original", "Filtered", "Reduction"],
+    ["match", original_match, filter_match, 
+        "{0:.3f}%".format((1 - (filter_match/original_match)) * 100)],
+    ["match_part", original_match_part, filter_match_part, 
+        "{0:.3f}%".format((1 - (filter_match_part/original_match_part)) * 100)]
+]
+
+longest_cols = [(max([len(str(row[i])) for row in table]) + 3) for i in range(len(table[0]))]
+row_format = "".join(["{:>" + str(longest_col) + "}" for longest_col in longest_cols])
+for row in table:
+    print(row_format.format(*row))
 
 os.remove(db_name)
