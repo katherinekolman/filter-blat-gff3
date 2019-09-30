@@ -12,13 +12,13 @@ You need a python environment with gffutils and biopython installed:
 `python filter.py <gff3 filename> <fasta filename> [-h] [-l lengththreshold] [-s scorethreshold] [-o output]`
 
 #### Flags:
--l specifies a length threshold, specifically the minimum allowed ratio between the length of the transcript found in the gff3 file and the length of the transcript in the FASTA file. Default: .5
+`-l` specifies a length threshold, specifically the minimum allowed ratio between the length of the transcript found in the gff3 file and the length of the transcript in the FASTA file. Default: .5
 
--s specifies the minimum score threshold. Default: 0
+`-s` specifies the minimum score threshold. Default: 0
 
--o specifies the output filename. Default: output_\<datetime>.gff3
+`-o` specifies the output filename. Default: output_\<datetime>.gff3
 
--h shows the help message and exits.
+`-h` shows the help message and exits.
 
 ### Example:
 
