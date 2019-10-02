@@ -51,11 +51,7 @@ for a in DB.features_of_type('match'):
     match = a.attributes['match_id'][0]
     gid = a.attributes['ID'][0]
 
-    if length < LENGTH_THRESHOLD * lengths[match]:
-        to_delete.update({x.attributes['ID'][0]: 1 for x in [a, *list(DB.children(gid))]})
-        num_deleted_match += 1
-        num_deleted_match_part += len(list(DB.children(gid)))
-    elif score < SCORE_THRESHOLD:
+    if length < LENGTH_THRESHOLD * lengths[match] or score < SCORE_THRESHOLD:
         to_delete.update({x.attributes['ID'][0]: 1 for x in [a, *list(DB.children(gid))]})
         num_deleted_match += 1
         num_deleted_match_part += len(list(DB.children(gid)))
@@ -89,11 +85,13 @@ filter_match = original_match - num_deleted_match
 filter_match_part = original_match_part - num_deleted_match_part
 
 table = [
-    ["", "Original", "Filtered", "Reduction"],
-    ["match", original_match, filter_match, 
-        "{0:.3f}%".format((1 - (filter_match/original_match)) * 100)],
-    ["match_part", original_match_part, filter_match_part, 
-        "{0:.3f}%".format((1 - (filter_match_part/original_match_part)) * 100)]
+    ["", "Original", "Filtered"],
+    ["match", original_match, filter_match], 
+    ["match_part", original_match_part, filter_match_part],  
+    ["Ratio (match_part:match)", 
+        "{0:.3f}".format(original_match_part/original_match),
+        "{0:.3f}".format(filter_match_part/filter_match)
+    ]
 ]
 
 longest_cols = [(max([len(str(row[i])) for row in table]) + 3) for i in range(len(table[0]))]
